@@ -1,0 +1,17 @@
+	def block_number_translate(self, virtual_block_number):
+
+		packof3index = virtual_block_number/3
+		vnumbers = virtual_block_number%3
+		if(packof3index % 4 == 0):
+			server = vnumbers
+		elif(packof3index % 4 == 1):
+			server = vnumbers + vnumbers/2
+		elif(packof3index % 4 == 2):
+			server = 2*vnumbers - vnumbers/2
+		else:
+			server = vnumbers + 1
+		return server
+    
+    This does the job for me in case you are still thinking how to solve that.. or do you have a better solution?
+    
+    Btw virtualblocknumbers are assigned starting from 0 one after the others..
