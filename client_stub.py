@@ -12,7 +12,7 @@ server_number = 2
 
 class client_stub():
     proxy = []
-    next_server_block = 0
+    next_server = 0
 
 
     def __init__(self):
@@ -57,13 +57,20 @@ class client_stub():
         localBlockNum = virtual_block_number
         return serverNum, localBlockNum
 
+    def __get_virtual_data_block(self, block_number, server_id) :
+        virtual_block_number = block_number
+        return virtual_block_number
+
     def get_valid_data_block(self):
         try :
-            retVal = self.proxy[0].get_valid_data_block()
+            retVal = self.proxy[self.next_server].get_valid_data_block()
         except Exception as err :
             print('connection error')
             return -1
         retVal, state = pickle.loads(retVal)
+        retVal = self.__get_virtual_data_block(retVal, self.next_server)
+
+        self.next_server = (self.next_server + 1) % server_number
         return retVal
 
     def free_data_block(self, block_number):
