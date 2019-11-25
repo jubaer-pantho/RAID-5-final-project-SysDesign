@@ -7,15 +7,17 @@ import xmlrpclib, config, pickle
 #proxy[0] = xmlrpclib.Serverproxy[0]("http://localhost:8000/")
 
 portNumber = 8000
-serverNumber = 2
+server_number = 2
 
 
 class client_stub():
     proxy = []
+    next_server_block = 0
+
 
     def __init__(self):
 
-        for i in range(serverNumber):
+        for i in range(server_number):
             tmp =  xmlrpclib.ServerProxy("http://localhost:"+ str(portNumber + i) +"/")
             self.proxy.append(tmp)
         print('---------------------------------------')
@@ -25,12 +27,13 @@ class client_stub():
 
     def Initialize(self):
         try :
-            self.proxy[0].Initialize()
+            for i in range(server_number):
+                self.proxy[i].Initialize()
         except Exception as err :
             print('connection error, failed to initialize file system, exiting')
             quit()
 
-    def addr_inode_table(self):
+    def addr_inode_table(self): 
         try :
             return self.proxy[0].addr_inode_table()
         except Exception as err :
@@ -38,14 +41,21 @@ class client_stub():
             return -1
 
     def get_data_block(self, block_number):
+        svnumber, localBlockNum =  self.__block_number_translate(block_number)
         try :
-            retVal =  self.proxy[0].get_data_block(pickle.dumps(block_number))
+            retVal =  self.proxy[svnumber].get_data_block(pickle.dumps(localBlockNum))
         except Exception as err :
             print('connection error')
             return -1
-            
+
         retVal, state =  pickle.loads(retVal)
         return retVal
+
+    def __block_number_translate(self, virtual_block_number) :
+        '''WRITE CODE HERE'''
+        serverNum = 0
+        localBlockNum = virtual_block_number
+        return serverNum, localBlockNum
 
     def get_valid_data_block(self):
         try :
@@ -58,7 +68,8 @@ class client_stub():
 
     def free_data_block(self, block_number):
         try :
-            retVal =  self.proxy[0].free_data_block(pickle.dumps(block_number))
+            svnumber, localBlockNum =  self.__block_number_translate(block_number)
+            retVal =  self.proxy[svnumber].free_data_block(pickle.dumps(localBlockNum))
         except Exception as err :
             print('connection error')
             return -1
@@ -66,8 +77,9 @@ class client_stub():
         return retVal
 
     def update_data_block(self, block_number, block_data):
+        svnumber, localBlockNum =  self.__block_number_translate(block_number)
         try :
-            retVal =  self.proxy[0].update_data_block(pickle.dumps(block_number), pickle.dumps(block_data))
+            retVal =  self.proxy[svnumber].update_data_block(pickle.dumps(localBlockNum), pickle.dumps(block_data))
         except Exception as err :
             print('connection error')
             return -1
