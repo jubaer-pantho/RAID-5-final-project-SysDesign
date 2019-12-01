@@ -67,7 +67,8 @@ class client_stub():
 				retVal =  self.servers[server].get_data_block(phy_blocknumer)
 
 				retVal = pickle.loads(retVal)[0]
-				read_hash = retVal[-16::] #extract hash from block
+				read_hash = retVal[-16::]
+
 				read_hash = ''.join(read_hash)
 				hash = hashlib.md5()
 				retVal = retVal[0:config.BLOCK_SIZE]
@@ -107,9 +108,10 @@ class client_stub():
   		    if(self.physical_block_numbers[blocknum] != -1): #check if exits
   		      dataotherservers.append(self.get_data_block(blocknum,0))
   		  if(len(dataotherservers) == 2):
-  		    datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(dataotherservers[0],dataotherservers[1]))
+			  datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(dataotherservers[0],dataotherservers[1]))
   		  elif(len(dataotherservers) == 1):
-  		    datareconstructed = dataotherservers[0]
+			  datareconstructed = dataotherservers[0]
+
 
   		  if(self.physical_parity_block_numbers[block_number/3] == -1): #check if exits
 			phy_paritynumer = self.get_valid_data_block(parityserver)
@@ -121,8 +123,12 @@ class client_stub():
 			old_parity = self.get_data_block(block_number,1)
 
 
+
+
+
   		  datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(datareconstructed,old_parity))
-		  print(datareconstructed)
+
+
 		  return datareconstructed
 
 	def get_valid_data_block(self,server):
@@ -158,6 +164,7 @@ class client_stub():
 
 		if(self.faulty_server == -1 or (self.faulty_server != server and self.faulty_server != parityserver)): #doesnt affect our write
 
+			print('Server', server)
   			if(self.physical_block_numbers[block_number] == -1): #check if exits
 
 			    phy_blocknumer = self.get_valid_data_block(server)
@@ -168,6 +175,8 @@ class client_stub():
 				phy_blocknumer = self.physical_block_numbers[block_number]
 				old_data = self.get_data_block(block_number,0)
 
+
+
 			if(self.physical_parity_block_numbers[block_number/3] == -1): #check if exits
 				phy_paritynumer = self.get_valid_data_block(parityserver)
 				phy_paritynumer = phy_paritynumer[0]
@@ -175,6 +184,7 @@ class client_stub():
 			else:
 				phy_paritynumer = self.physical_parity_block_numbers[block_number/3]
 				old_parity = self.get_data_block(block_number,1)
+
 
 			parity_data = ''.join(chr(ord(a)^ord(b)) for a, b in zip(old_data,block_data))
 			parity_data = ''.join(chr(ord(a)^ord(b)) for a, b in zip(old_parity,parity_data))
@@ -251,6 +261,7 @@ class client_stub():
 			elif(len(dataotherservers) == 1):
 				datareconstructed = dataotherservers[0]
 
+
 			if(self.physical_parity_block_numbers[block_number/3] == -1): #check if exits
 				phy_paritynumer = self.get_valid_data_block(parityserver)
 				phy_paritynumer = phy_paritynumer[0]
@@ -258,6 +269,8 @@ class client_stub():
 			else:
 				phy_paritynumer = self.physical_parity_block_numbers[block_number/3]
 				old_parity = self.get_data_block(block_number,1)
+
+
 
 			datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(datareconstructed,old_parity))
 

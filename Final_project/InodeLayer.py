@@ -72,16 +72,16 @@ class InodeLayer():
 
     	if(len_old_data != 0):	  #if offset is in the middle of block..
 
-    	  dataold = self.INODE_TO_BLOCK(inode,offset)  #read block to update
+    	  data_old = self.INODE_TO_BLOCK(inode,offset)  #read block to update
           file_size = len(data_old) + start_block*config.BLOCK_SIZE - data_old.count('\0') #sustract ammount of \0
           if((offset > file_size) or (offset < 0)):  #return error if offset ist bigger then text file
             return -2
           dataremain = '\0'*(config.BLOCK_SIZE-len(data)-len_old_data)
-          stringtowrite = dataold[0:len_old_data] + data[0:len_new_data] + dataremain
+          stringtowrite = data_old[0:len_old_data] + data[0:len_new_data] + dataremain
 
     	  dataarray.append(stringtowrite) #update read block
-          self.free_data_block(inode,start_block)
-          inode.size = 0
+          #self.free_data_block(inode,start_block)
+          #inode.size = 0
     	  for i in range(len_new_data, len(data), config.BLOCK_SIZE):  #create remaining bloxks if there are some
 
             zeropadding = config.BLOCK_SIZE - len(data[i : i + config.BLOCK_SIZE])
