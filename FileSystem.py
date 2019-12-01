@@ -59,31 +59,52 @@ if __name__ == '__main__':
     #my_object.status()
     my_object.create("/A/1.txt") #, as A is already there we can crete file in A
     my_object.create("/B/2.txt") #, as A is already there we can crete file in A
+    my_object.create("/B/3.txt") #, as A is already there we can crete file in A
+    my_object.create("/A/4.txt") #, as A is already there we can crete file in A
     #my_object.status()
     start = timeit.default_timer()
     my_object.write("/A/1.txt", "Pantho", 0)
     stop = timeit.default_timer()
     print('Write Time: ', stop - start)
 
+
     start = timeit.default_timer()
     my_object.read("/A/1.txt", 0, 6)
+
+    my_object.write("/B/2.txt", "Md Jubaer", 0)
+    my_object.read("/B/2.txt", 0, 9)
+
+
+    my_object.write("/B/2.txt", "r Hossain Pantho", 8)
+    my_object.read("/B/2.txt", 0, 24)
+
+
+
+    my_object.write("/B/3.txt", "Gainesville", 0)
+    my_object.read("/B/3.txt", 0, 11)
+
+
+    my_object.write("/A/4.txt", "Florida", 0)
+    my_object.read("/A/4.txt", 0, 7)
+
+
     stop = timeit.default_timer()
     print('Read Time: ', stop - start)
     
     #my_object.status()
-    start = timeit.default_timer()
+    '''start = timeit.default_timer()
     my_object.mv("/A/1.txt", "/B")
     stop = timeit.default_timer()
     print('Move Time: ', stop - start)
 
     my_object.read("/B/1.txt", 0, 6)
-    my_object.status()
+#    my_object.status()
     #my_object.rm("/B/1.txt")
     my_object.mv("/B", "/A")
 
     start = timeit.default_timer()
     my_object.rm("/A/B/1.txt") 
     stop = timeit.default_timer()
-    print('remove Time: ', stop - start)
+    print('remove Time: ', stop - start)'''
     #my_object.status()
 

@@ -18,7 +18,7 @@ class InodeLayer():
 
     #RETURNS BLOCK DATA FROM INODE
     def INODE_TO_BLOCK(self, inode, offset):
-        index = offset / config.BLOCK_SIZE
+        index = offset / (config.BLOCK_SIZE - 16)
         block_number = self.INDEX_TO_BLOCK_NUMBER(inode, index)
         if block_number == -1: return ''
         else: return interface.BLOCK_NUMBER_TO_DATA_BLOCK(block_number)
@@ -66,8 +66,8 @@ class InodeLayer():
         # for the first time
         if inode.size == 0 and offset == 0:
             data_array = []
-            for i in range(0, len(data), config.BLOCK_SIZE):
-                data_array.append(data[i : i + config.BLOCK_SIZE])
+            for i in range(0, len(data), (config.BLOCK_SIZE - 16)):
+                data_array.append(data[i : i + (config.BLOCK_SIZE - 16)])
             for i in range(len(data_array)):
                 valid_block_number = interface.get_valid_data_block()
                 interface.update_data_block(valid_block_number, data_array[i])
@@ -75,8 +75,8 @@ class InodeLayer():
                 inode.size += 1 
         else:
             block_data = self.INODE_TO_BLOCK(inode, offset)
-            file_index = offset / config.BLOCK_SIZE
-            block_index = offset % config.BLOCK_SIZE
+            file_index = offset / (config.BLOCK_SIZE - 16)
+            block_index = offset % (config.BLOCK_SIZE - 16)
 
             if (block_data == '' or inode.blk_numbers[file_index] == -1):
                 print("offset is out of bound: Operation not Permitted")
@@ -105,8 +105,8 @@ class InodeLayer():
             return -1
 
         block_data = self.INODE_TO_BLOCK(inode, offset)
-        file_index = offset / config.BLOCK_SIZE
-        block_index = offset % config.BLOCK_SIZE
+        file_index = offset / (config.BLOCK_SIZE - 16)
+        block_index = offset % (config.BLOCK_SIZE - 16)
 
         if (block_data == '' or inode.blk_numbers[file_index] == -1):
                 print("offset is out of bound: Operation not Permitted")
@@ -116,21 +116,21 @@ class InodeLayer():
         data_read = interface.BLOCK_NUMBER_TO_DATA_BLOCK(inode.blk_numbers[file_index]) 
         data_array = []
 
-        x = config.BLOCK_SIZE - block_index
+        x = (config.BLOCK_SIZE -16) - block_index
 
         if x > length:
             x = block_index + length
             length = 0
         else:
             length = length - x
-            x = config.BLOCK_SIZE
+            x = (config.BLOCK_SIZE - 16)
 
         data_array.append(data_read[block_index:x])
 
         #reading the rest of the blocks
         while(length):
             file_index += 1
-            x = length if config.BLOCK_SIZE > length else config.BLOCK_SIZE
+            x = length if (config.BLOCK_SIZE - 16) > length else (config.BLOCK_SIZE - 16)
             if (inode.blk_numbers[file_index] == -1):
                 print("Length goes beyond allocated blocks")
                 return -1
