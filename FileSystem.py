@@ -104,8 +104,11 @@ if __name__ == '__main__':
                 my_object.rm(inputs[1])
             except:
                 print("Error: Revise your input, to remove a file/folder : <rm AbsoluteFilePath>")
-        #elif (inputs[0] == 'mv'):
-          # my_object.mv(inputs[1], inputs[2])
+        elif (inputs[0] == 'mv'):
+            try:
+                my_object.mv(inputs[1], inputs[2])
+            except:
+                print("Error: Revise your input, to move a file : <mv oldPath newPath>")
         else:
            print('Incorrect input')
 
