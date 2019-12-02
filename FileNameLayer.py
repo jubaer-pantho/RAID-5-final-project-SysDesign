@@ -101,9 +101,22 @@ class FileNameLayer():
 	#MOVE
 	def mv(self, old_path, new_path, inode_number_cwd):
 		'''WRITE YOUR CODE HERE'''
-                try:
-                    self.link(old_path, new_path, inode_number_cwd)
-                    self.unlink(old_path, inode_number_cwd)
-                except:
-                    print("Move failed")
-                    return -1
+		parent_inode_number_old = self.LOOKUP(old_path, inode_number_cwd)
+		parent_inode = interface.INODE_NUMBER_TO_INODE(parent_inode_number_old)
+		childname = old_path.split('/')[-1]
+		child_inode_number = self.CHILD_INODE_NUMBER_FROM_PARENT_INODE_NUMBER(childname,parent_inode_number_old)
+		child_inode = interface.INODE_NUMBER_TO_INODE(child_inode_number)
+		parent_inode_number = self.LOOKUP(new_path, inode_number_cwd)
+		new_childname = new_path.split('/')[-1]
+
+
+		parent_inode_new = interface.INODE_NUMBER_TO_INODE(parent_inode_number)
+		if child_inode_number != -1:
+			parent_inode_new.directory[childname] = child_inode_number
+			child_inode.links += 1
+			interface.update_inode_table(child_inode, child_inode_number)
+			interface.update_inode_table(parent_inode_new, parent_inode_number)
+			self.unlink(old_path,inode_number_cwd)
+			return True
+		print("Error FileNameLayer")
+		return -1
