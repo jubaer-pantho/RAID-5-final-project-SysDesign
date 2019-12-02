@@ -74,29 +74,29 @@ if __name__ == '__main__':
             try:
                 my_object.mkdir(inputs[1])
             except:
-                print("Incorrect input, Input format to create folder is <mkdir yourFolderName>")
+                print("Error: Revise your input, to create folder : <mkdir yourFolderName>")
         elif (inputs[0] == 'create'):
             try:
                 my_object.create(inputs[1])
             except:
-                 print("Incorrect input, Input format to create file is <create yourFileName>")
+                print("Error: Revise your input, to create file : <create yourFileName>")
         elif (inputs[0] == 'write'):
             try:
                 my_object.write(inputs[1], inputs[2], int(float(inputs[3])), int(float(inputs[4])))
             except:
-                print("Incorrect input, Input format to write to a file is <write AbsoluteFilePath data offset delay>")
+                print("Error: Revise your input, to write to a file : <write AbsoluteFilePath data offset delay>")
         elif (inputs[0] == 'read'):
             try:
                 my_object.read(inputs[1], int(float(inputs[2])), int(float(inputs[3])))
             except:
-                print("Incorrect input, Input format to read from a file is <read AbsoluteFilePath offset readSize>")
+                print("Error: Revise your input, to read from a file : <read AbsoluteFilePath offset readSize>")
         elif (inputs[0] == 'status'):
            my_object.status()
         elif (inputs[0] == 'rm'):
             try:
                 my_object.rm(inputs[1])
             except:
-                print("Incorrect input, Input format to remove a file/folder is <rm AbsoluteFilePath>")
+                print("Error: Revise your input, to remove a file/folder : <rm AbsoluteFilePath>")
         #elif (inputs[0] == 'mv'):
           # my_object.mv(inputs[1], inputs[2])
         else:
