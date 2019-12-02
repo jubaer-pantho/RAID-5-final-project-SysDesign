@@ -19,6 +19,7 @@ def configure():
 	return retVal
 
 def Initialize():
+
 	retVal = Memory.Initialize()
 	retVal = pickle.dumps((retVal,state))
 	return retVal
@@ -29,23 +30,27 @@ def addr_inode_table():
 	return retVal
 
 def get_data_block(block_number):
+
 	passVal = pickle.loads(block_number)
 	retVal  = filesystem.get_data_block(passVal)
+	if(state == False):
+		corrdata = (config.BLOCK_SIZE+16)*'a'
+		retVal = ''.join(chr(ord(a)^ord(b)) for a, b in zip(retVal , corrdata))
 	retVal  = pickle.dumps((retVal,state))
 	return retVal
 
-def get_valid_data_block():	
+def get_valid_data_block():
 	retVal = filesystem.get_valid_data_block()
 	retVal = pickle.dumps((retVal,state))
 	return retVal
 
-def free_data_block(block_number):  
+def free_data_block(block_number):
 	passVal = pickle.loads(block_number)
 	retVal  = filesystem.free_data_block(passVal)
 	retVal  = pickle.dumps((retVal,state))
 	return retVal
 
-def update_data_block(block_number, block_data):	
+def update_data_block(block_number, block_data):
 	passVal1 = pickle.loads(block_number)
 	passVal2 = pickle.loads(block_data)
 	retVal 	 = filesystem.update_data_block(passVal1, passVal2)
@@ -68,9 +73,12 @@ def inode_number_to_inode(inode_number):
 def status():
 	retVal = filesystem.status()
 	retVal = pickle.dumps((retVal,state))
+	print(state)
 	return retVal
 
 def corruptData():
+	global state
+	state = False
 	retVal = 'Data Corrupted in server ' + str(portNumber)
 	retVal = pickle.dumps((retVal,state))
 	return retVal

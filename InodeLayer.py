@@ -2,8 +2,7 @@
 THIS MODULE IS INODE LAYER OF THE FILE SYSTEM. IT INCLUDES THE INODE DEFINITION DECLARATION AND GLOBAL HANDLE OF BLOCK LAYER OF API.
 THIS MODULE IS RESPONSIBLE FOR PROVIDING ACTUAL BLOCK NUMBERS SAVED IN INODE ARRAY OF BLOCK NUMBERS TO FETCH DATA FROM BLOCK LAYER.
 '''
-import datetime, config, BlockLayer, InodeOps
-
+import datetime, config, BlockLayer, InodeOps, hashlib, time
 
 #HANDLE OF BLOCK LAYER
 interface = BlockLayer.BlockLayer()
@@ -29,126 +28,152 @@ class InodeLayer():
         return InodeOps.Table_Inode(type)
 
 
-    #FLUSHES ALL THE BLOCKS OF INODES FROM GIVEN INDEX OF MAPPING ARRAY  
+    #FLUSHES ALL THE BLOCKS OF INODES FROM GIVEN INDEX OF MAPPING ARRAY
     def free_data_block(self, inode, index):
         for i in range(index, len(inode.blk_numbers)):
-            interface.free_data_block(inode.blk_numbers[i])
-            inode.blk_numbers[i] = -1
+            if(inode.blk_numbers[i] != -1):
+                interface.free_data_block(inode.blk_numbers[i])
+                inode.blk_numbers[i] = -1
 
 
-    # helper function to write data to the blocks
-    def __write_to_filesystem_offset(self, inode, offset, data_array):
-        flag = 0
-        index = offset / config.BLOCK_SIZE
-        for i in range(len(data_array)):
-            if (inode.blk_numbers[index] != -1 and flag == 0):
-                interface.update_data_block(inode.blk_numbers[index], data_array[i])
-                index += 1
-            else:
-                flag = 1
-                valid_block_number = interface.get_valid_data_block()
-                interface.update_data_block(valid_block_number, data_array[i])
-                if (index >= len(inode.blk_numbers)):
-                    print("\nWrite size too big: Operation not Permitted\n")
-                    return
-                inode.blk_numbers[index] = valid_block_number
-                inode.size += 1
-                index += 1
-
-    #IMPLEMENTS WRITE FUNCTIONALITY
-    def write(self, inode, offset, data):
-        #PLACE CODE FROM HW2 HERE
-        if inode.type == 1:
-            print("Inode is a directory: Operation not Permitted")
-            return -1
-
-        # the if condition will be only executed if the file size is 0
-        # for the first time
-        if inode.size == 0 and offset == 0:
-            data_array = []
-            for i in range(0, len(data), config.BLOCK_SIZE):
-                data_array.append(data[i : i + config.BLOCK_SIZE])
-            for i in range(len(data_array)):
-                valid_block_number = interface.get_valid_data_block()
-                interface.update_data_block(valid_block_number, data_array[i])
-                inode.blk_numbers[i] = valid_block_number
-                inode.size += 1 
-        else:
-            block_data = self.INODE_TO_BLOCK(inode, offset)
-            file_index = offset / config.BLOCK_SIZE
-            block_index = offset % config.BLOCK_SIZE
-
-            if (block_data == '' or inode.blk_numbers[file_index] == -1):
-                print("offset is out of bound: Operation not Permitted")
-                return -1
+#IMPLEMENTS WRITE FUNCTIONALITY
+    def write(self, inode, offset, data, delay):
 
 
-            if block_index != 0:
-                old_data = interface.BLOCK_NUMBER_TO_DATA_BLOCK(inode.blk_numbers[file_index])
-                data = old_data[:block_index] + data
+        inode.time_accessed = str(datetime.datetime.now())     #update access time
+        lenght_hash = 16
+        dataarray = []
+        start_block = offset/config.BLOCK_SIZE	 #block where to start
+        len_old_data = offset % config.BLOCK_SIZE  #determin where in a block the data is going to start
+        len_new_data = config.BLOCK_SIZE - len_old_data   #length of old data in block
+        data_old = ""
+        file_size = 0
+        #------------ERROR management------------------------------------------------
 
-            data_array = []
-            for i in range(0, len(data), config.BLOCK_SIZE):
-                data_array.append(data[i : i + config.BLOCK_SIZE])
+        if(inode.type != 0):   #check if Inode is of type file
+          return -1
 
-            self.__write_to_filesystem_offset(inode, offset, data_array)
 
-        inode.time_accessed = str(datetime.datetime.now())[:19]
-        inode.time_modified = str(datetime.datetime.now())[:19]
-        return inode
 
-    #IMPLEMENTS THE READ FUNCTION 
-    def read(self, inode, offset, length): 
-        #PLACE CODE FROM HW2 HERE
-        if inode.type == 1:
-            print("Inode is a directory: Operation not Permitted")
-            return -1
+        max_file_size = len(inode.blk_numbers)*config.BLOCK_SIZE	#calculate maximum size file
 
-        block_data = self.INODE_TO_BLOCK(inode, offset)
-        file_index = offset / config.BLOCK_SIZE
-        block_index = offset % config.BLOCK_SIZE
 
-        if (block_data == '' or inode.blk_numbers[file_index] == -1):
-                print("offset is out of bound: Operation not Permitted")
-                return -1
+        if(offset + len(data) > file_size):     #calculate new file size based on data to be written and previous content of the file
+          new_file_size =  len(data) + offset
+        else: new_file_size =  file_size
 
-        # reading the first block with offset
-        data_read = interface.BLOCK_NUMBER_TO_DATA_BLOCK(inode.blk_numbers[file_index]) 
-        data_array = []
+        if(new_file_size > max_file_size):   #truncate data if it is bigger than the avaiable space in file
+          data = data[:-(new_file_size-max_file_size)]
 
-        x = config.BLOCK_SIZE - block_index
 
-        if x > length:
-            x = block_index + length
-            length = 0
-        else:
-            length = length - x
-            x = config.BLOCK_SIZE
+    	#------------------------------------------------------------------------------
+         #provisorisch
+            #-------------------------------------create dataarray -----------
 
-        data_array.append(data_read[block_index:x])
+    	if(len_old_data != 0):	  #if offset is in the middle of block..
 
-        #reading the rest of the blocks
-        while(length):
-            file_index += 1
-            x = length if config.BLOCK_SIZE > length else config.BLOCK_SIZE
-            if (inode.blk_numbers[file_index] == -1):
-                print("Length goes beyond allocated blocks")
-                return -1
-            data_read = interface.BLOCK_NUMBER_TO_DATA_BLOCK(inode.blk_numbers[file_index])
-            data_array.append(data_read[:x])
-            length -= x
+    	  data_old = self.INODE_TO_BLOCK(inode,offset)  #read block to update
+          file_size = len(data_old) + start_block*config.BLOCK_SIZE - data_old.count('\0') #sustract ammount of \0
+          if((offset > file_size) or (offset < 0)):  #return error if offset ist bigger then text file
+            return -2
+          dataremain = '\0'*(config.BLOCK_SIZE-len(data)-len_old_data)
+          stringtowrite = data_old[0:len_old_data] + data[0:len_new_data] + dataremain
 
-        inode.time_accessed = str(datetime.datetime.now())[:19]
-        return "".join(data_array)
+    	  dataarray.append(stringtowrite) #update read block
+          #self.free_data_block(inode,start_block)
+          #inode.size = 0
+    	  for i in range(len_new_data, len(data), config.BLOCK_SIZE):  #create remaining bloxks if there are some
 
-# debug print function
-'''    def printAttr(self, inode):
-        print("printing blk numbers: ", inode.blk_numbers)
-        print("directory: ", inode.directory)
-        print("time created: ", inode.time_created)
-        print("time modified: ", inode.time_modified)
-        print("time accessed: ", inode.time_accessed)
-        print("inode size: ", inode.size)
-        print("inode links: ", inode.links)
-'''
+            zeropadding = config.BLOCK_SIZE - len(data[i : i + config.BLOCK_SIZE])
+            stringtowrite = data[i : i + config.BLOCK_SIZE] + zeropadding*'\0'
 
+            dataarray.append(stringtowrite)
+
+
+    	else:
+
+         self.free_data_block(inode,start_block)
+         inode.size = 0
+
+    	 for i in range(0, len(data), config.BLOCK_SIZE):
+
+            zeropadding = config.BLOCK_SIZE - len(data[i : i + config.BLOCK_SIZE])
+            stringtowrite = data[i : i + config.BLOCK_SIZE] + zeropadding*'\0'
+
+    	    dataarray.append(stringtowrite)
+
+    	#-----------------------------------write data-------------------------
+
+    	num_block_required = len(dataarray)
+        serverprint = 'Data is written on '
+    	for i in range(0, num_block_required):
+    	  if(inode.size < len(dataarray)):
+    	    inode.blk_numbers[start_block + i] = interface.get_new_virtual_block()  #allocate new blocks in inode if needed
+    	    inode.size += 1    #update file size
+    	    inode.time_modified = str(datetime.datetime.now())   #update modified time when new reference block is created in the inode
+          ser = interface.block_number_translate(inode.blk_numbers[start_block + i])
+
+          serverprint = serverprint + 'server ' + str(ser[0])+ ' '
+        print(serverprint)
+        time.sleep(delay)
+        for i in range(0, num_block_required):
+          interface.update_data_block(inode.blk_numbers[start_block + i], dataarray[i], delay)   #write blocks
+
+    	return inode
+
+    #IMPLEMENTS THE READ FUNCTION
+    def read(self, inode, offset, length):
+    	inode.time_accessed = str(datetime.datetime.now())    #update accessed time
+    	start_block_read = offset/config.BLOCK_SIZE      #in which block the reading starts
+    	numb_blocks = 1
+    	leng_blocks = []
+        serverprint = 'Data is read from '
+
+    	#------------ERROR management------------------------------------------------
+    	if(inode.type != 0):   #check if Inode is of type file
+    	  print('ERROR: Inode is not a file')
+    	  return inode, -1
+
+            #------------ determine the length of the read string per block depending on offset and length and for each block involve din read operation
+        if(config.BLOCK_SIZE - offset%config.BLOCK_SIZE >= length):
+    	  leng_blocks.append(length)
+    	  length = 0
+    	else:
+    	  leng_blocks.append(config.BLOCK_SIZE - offset)
+    	  length -= config.BLOCK_SIZE - offset
+
+    	while(length>0):
+    	  if(length < config.BLOCK_SIZE):
+    	    leng_blocks.append(length)
+    	    numb_blocks +=1
+            break;
+    	  else:
+    	    leng_blocks.append(config.BLOCK_SIZE)
+    	    length -= config.BLOCK_SIZE
+    	    numb_blocks +=1
+
+    	#-------------------------------------------------------------------------------------------
+    	dataarray = []
+    	read_data = ''
+        length_hash = 16
+    	offsetcopy = offset
+
+        for i in range(0,numb_blocks):
+            index = offset / config.BLOCK_SIZE
+            ser = interface.block_number_translate(self.INDEX_TO_BLOCK_NUMBER(inode,index + i))
+            serverprint = serverprint + 'server ' + str(ser[0]) + ' '
+        print(serverprint)
+        time.sleep(5)
+
+        for i in range(0,numb_blocks):
+    	  dataarray.append(self.INODE_TO_BLOCK(inode,offset + (i*config.BLOCK_SIZE))) #read all blocks where the desired data is distribuited
+          file_size = len(dataarray[i]) -  dataarray[i].count('\0')
+
+          if(offsetcopy%config.BLOCK_SIZE >= file_size):
+      	       print('Reading ERROR: Offset too big')
+      	       return inode, -1
+
+          read_data += dataarray[i][(offsetcopy%config.BLOCK_SIZE):(offsetcopy%config.BLOCK_SIZE)+leng_blocks[i]]    #read out the right data starting from offset
+    	  offsetcopy = 0
+
+        return inode, read_data

@@ -7,14 +7,16 @@ import MemoryInterface
 
 class BlockLayer():
 
+
+
     #RETURNS DATA BLOCK FROM THE BLOCK NUMBER
     def BLOCK_NUMBER_TO_DATA_BLOCK(self, block_number):
         return ''.join(MemoryInterface.get_data_block(block_number))
 
 
     #PROVIDES DATA AND BLOCK NUMBER ON WHICH DATA IS TO BE WRITTEN
-    def update_data_block(self, block_number, block_data):
-        MemoryInterface.update_data_block(block_number, block_data)
+    def update_data_block(self, block_number, block_data, delay):
+        MemoryInterface.update_data_block(block_number, block_data, delay)
 
 
     #ASKS FOR VALID DATA BLOCK NUMBER
@@ -22,9 +24,13 @@ class BlockLayer():
         return MemoryInterface.get_valid_data_block()
 
 
-    #REMOVES THE INVALID BLOCK NUMBER. 
+    #REMOVES THE INVALID BLOCK NUMBER.
     def free_data_block(self, block_number):
         MemoryInterface.free_data_block(block_number)
 
 
-    
+    def get_new_virtual_block(self):
+        return MemoryInterface.get_new_virtual_block()
+
+    def block_number_translate(self, virtual_block_number):
+        return MemoryInterface.block_number_translate(virtual_block_number)

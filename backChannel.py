@@ -14,7 +14,7 @@ for i in range(num_servers) :
 	print('running server #' + str(portNum+i))
 	proxy.append(xmlrpclib.ServerProxy("http://localhost:" + str(portNum + i) + "/"))
 	os.system('gnome-terminal -e \"python server.py ' + str(portNum + i) + '\"')
-	time.sleep(1)
+	time.sleep(0.2)
 
 while True:
 	serverNum = int(raw_input("Select Server to Corrupt..."))
