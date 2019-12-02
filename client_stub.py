@@ -157,6 +157,17 @@ class client_stub():
 			print('Error free_data_block')
 			quit()
 
+
+        def __calculate_block_hash(self, block_data):
+                
+		hash = hashlib.md5()
+		hash.update(block_data)
+		block_data += hash.digest()
+
+                return block_data
+
+
+
 	def update_data_block(self, block_number, block_data, delay):
 
 		server, parityserver = self.block_number_translate(block_number)
@@ -188,17 +199,14 @@ class client_stub():
 				old_parity = self.get_data_block(block_number,1)
 
 
-			parity_data = ''.join(chr(ord(a)^ord(b)) for a, b in zip(old_data,block_data))
-			parity_data = ''.join(chr(ord(a)^ord(b)) for a, b in zip(old_parity,parity_data))
-
+                        #calculate_parity_block((old_data xor block_data) xor old_parity)
+                        parity_data = ''.join(chr(ord(a)^ord(b)) for a, b in zip(old_data, block_data))
+                        parity_data = ''.join(chr(ord(a)^ord(b)) for a, b in zip(old_parity,parity_data))
 
 			try:
-				hash = hashlib.md5()
-				hash.update(block_data)
-				block_data += hash.digest()
-				hash = hashlib.md5()
-				hash.update(parity_data)
-				parity_data += hash.digest()
+                                block_data = self.__calculate_block_hash(block_data)
+                                parity_data = self.__calculate_block_hash(parity_data)
+				
 
 				phy_blocknumer = pickle.dumps(phy_blocknumer)
 				block_data = pickle.dumps(block_data)
@@ -228,9 +236,7 @@ class client_stub():
 
 
 			try:
-				hash = hashlib.md5()
-				hash.update(block_data)
-				block_data += hash.digest()
+                                block_data = self.__calculate_block_hash(block_data)
 
 				phy_blocknumer = pickle.dumps(phy_blocknumer)
 				block_data = pickle.dumps(block_data)
@@ -280,9 +286,7 @@ class client_stub():
 			parity_data = ''.join(chr(ord(a)^ord(b)) for a, b in zip(old_parity,parity_data))
 
 			try:
-				hash = hashlib.md5()
-				hash.update(parity_data)
-				parity_data += hash.digest()
+                                parity_data = self.__calculate_block_hash(parity_data)
 
 				parity_data = pickle.dumps(parity_data)
 				phy_paritynumer = pickle.dumps(phy_paritynumer)
@@ -308,7 +312,7 @@ class client_stub():
 				self.faulty_server = index
 	def status(self):
 		retvalarr = ""
-		for i in range(0,4):
+		for i in range(0, self.server_number):
 
 			try:
 				retVal =  self.servers[i].status()
