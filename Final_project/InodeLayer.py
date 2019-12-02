@@ -30,6 +30,7 @@ class InodeLayer():
 
     #FLUSHES ALL THE BLOCKS OF INODES FROM GIVEN INDEX OF MAPPING ARRAY
     def free_data_block(self, inode, index):
+
         for i in range(index, len(inode.blk_numbers)):
             if(inode.blk_numbers[i] != -1):
                 interface.free_data_block(inode.blk_numbers[i])
@@ -92,8 +93,8 @@ class InodeLayer():
 
     	else:
 
-         self.free_data_block(inode,start_block)
-         inode.size = 0
+
+
 
     	 for i in range(0, len(data), config.BLOCK_SIZE):
 
@@ -116,10 +117,17 @@ class InodeLayer():
           serverprint = serverprint + 'server ' + str(ser[0])+ ' '
         print(serverprint)
         time.sleep(delay)
+
         for i in range(0, num_block_required):
           interface.update_data_block(inode.blk_numbers[start_block + i], dataarray[i], delay)   #write blocks
 
-    	return inode
+        if (inode.size > num_block_required):
+            dif = inode.size - num_block_required
+
+            self.free_data_block(inode, inode.blk_numbers[start_block + num_block_required] )
+            inode.size -= dif
+
+        return inode
 
     #IMPLEMENTS THE READ FUNCTION
     def read(self, inode, offset, length):

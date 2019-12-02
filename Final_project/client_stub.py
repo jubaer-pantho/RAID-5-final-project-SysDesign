@@ -122,10 +122,6 @@ class client_stub():
 			phy_paritynumer = self.physical_parity_block_numbers[block_number/3]
 			old_parity = self.get_data_block(block_number,1)
 
-
-
-
-
   		  datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(datareconstructed,old_parity))
 
 
@@ -142,13 +138,16 @@ class client_stub():
 
 	def free_data_block(self, block_number):
 
-		server = self.block_number_translate(block_number)[0]
 
+		server = self.block_number_translate(block_number)[0]
 		phy_blocknumer = self.physical_block_numbers[block_number]
 		phy_blocknumer = pickle.dumps(phy_blocknumer)
+		self.update_parity(block_number)
 		try:
 			if(server != self.faulty_server):
 				self.servers[server].free_data_block(phy_blocknumer)
+
+
 			self.physical_block_numbers[block_number] = -1
 			self.virtual_block_numbers[block_number] = False
 		except Exception as err:
@@ -164,7 +163,7 @@ class client_stub():
 
 		if(self.faulty_server == -1 or (self.faulty_server != server and self.faulty_server != parityserver)): #doesnt affect our write
 
-			print('Server', server)
+
   			if(self.physical_block_numbers[block_number] == -1): #check if exits
 
 			    phy_blocknumer = self.get_valid_data_block(server)
@@ -343,3 +342,34 @@ class client_stub():
 		else:
 			server = vnumbers + 1
 		return server,parity_server
+
+	def update_parity(self, block_number):
+
+		server, parityserver = self.block_number_translate(block_number)
+		old_data =  (config.BLOCK_SIZE+16)*'\0'
+		old_parity =  (config.BLOCK_SIZE+16)*'\0'
+
+		old_data = self.get_data_block(block_number, 0)
+		old_parity = self.get_data_block(block_number, 1)
+		parity_data = ''.join(chr(ord(a)^ord(b)) for a, b in zip(old_data,old_parity))
+
+
+		try:
+
+			hash = hashlib.md5()
+			hash.update(parity_data)
+			phy_paritynumer = self.physical_parity_block_numbers[block_number/3]
+
+			if(parity_data.count('\0') != config.BLOCK_SIZE):
+				parity_data += hash.digest()
+				parity_data = pickle.dumps(parity_data)
+				phy_paritynumer = pickle.dumps(phy_paritynumer)
+				self.servers[parityserver].update_data_block(phy_paritynumer, parity_data )
+			else:
+				phy_paritynumer = pickle.dumps(phy_paritynumer)
+				self.servers[parityserver].free_data_block(phy_paritynumer)
+
+
+		except Exception as err:
+			print('Error update_data_block')
+			print(err)
