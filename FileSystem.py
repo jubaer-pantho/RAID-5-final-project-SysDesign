@@ -20,7 +20,7 @@ class FileSystemOperations():
 
 
     #WRITE TO FILE
-    def write(self, path, data, offset=0, delay = 1):
+    def write(self, path, offset=0, delay = 1, data = " "):
         interface.write(path, offset, data, delay)
 
 
@@ -82,9 +82,16 @@ if __name__ == '__main__':
                 print("Error: Revise your input, to create file : <create yourFileName>")
         elif (inputs[0] == 'write'):
             try:
-                my_object.write(inputs[1], inputs[2], int(float(inputs[3])), int(float(inputs[4])))
+                string_to_write = []
+                for i in range(4,len(inputs)):
+                    string_to_write.append(inputs[i])
+
+                sentence_to_write = " ".join(string_to_write)
+                sentence_to_write = sentence_to_write.replace("\"", "")
+
+                my_object.write(inputs[1], int(float(inputs[2])), int(float(inputs[3])), sentence_to_write)
             except:
-                print("Error: Revise your input, to write to a file : <write AbsoluteFilePath data offset delay>")
+                print("Error: Revise your input, to write to a file : <write AbsoluteFilePath offset delay dataToWrite>")
         elif (inputs[0] == 'read'):
             try:
                 my_object.read(inputs[1], int(float(inputs[2])), int(float(inputs[3])))
