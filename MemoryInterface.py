@@ -8,10 +8,10 @@ client_stub = client_stub.client_stub()
 
 
 #REQUEST TO BOOT THE FILE SYSTEM
-def Initialize_My_FileSystem():
+def Initialize_My_FileSystem(no_of_servers):
     print("File System Initializing......")
-    time.sleep(2)
-    state = client_stub.Initialize()
+    time.sleep(1)
+    state = client_stub.Initialize(no_of_servers)
     print("File System Initialized!")
 
 

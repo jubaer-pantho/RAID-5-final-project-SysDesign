@@ -1,22 +1,24 @@
 # SKELETON CODE FOR CLIENT STUB HW4
 import xmlrpclib, config, pickle, time, hashlib
 
-class client_stub():
+portNumber = 8000
 
+class client_stub():
+        server_number = 0
 	def __init__(self):
 		self.virtual_block_numbers = [False]*config.TOTAL_NO_OF_BLOCKS
 		self.physical_block_numbers = [-1]*config.TOTAL_NO_OF_BLOCKS
 		self.physical_parity_block_numbers = [-1]*config.TOTAL_NO_OF_BLOCKS
 		self.faulty_server = -1
-
 		self.servers = []
-		self.servers.append(xmlrpclib.ServerProxy("http://localhost:8000/"))
-		self.servers.append(xmlrpclib.ServerProxy("http://localhost:8001/"))
-		self.servers.append(xmlrpclib.ServerProxy("http://localhost:8002/"))
-		self.servers.append(xmlrpclib.ServerProxy("http://localhost:8003/"))
 
 	# example provided for initialize
-	def Initialize(self):
+	def Initialize(self, no_of_servers):
+                self.server_number = no_of_servers
+
+                for i in range(self.server_number):
+                        self.servers.append(xmlrpclib.ServerProxy("http://localhost:"+ str(portNumber + i) +"/"))
+
 
 		for (index,server) in enumerate(self.servers):
 			try :

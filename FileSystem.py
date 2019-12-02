@@ -1,7 +1,7 @@
-import MemoryInterface, AbsolutePathNameLayer
+import MemoryInterface, AbsolutePathNameLayer, os, sys
 
-def Initialize_My_FileSystem():
-    MemoryInterface.Initialize_My_FileSystem()
+def Initialize_My_FileSystem(no_of_servers):
+    MemoryInterface.Initialize_My_FileSystem(no_of_servers)
     AbsolutePathNameLayer.AbsolutePathNameLayer().new_entry('/', 1)
 
 
@@ -53,8 +53,17 @@ if __name__ == '__main__':
 
 
 
-    #DO NOT MODIFY THIS
-    Initialize_My_FileSystem()
+    try:
+        #temporary fix
+        if (int(sys.argv[1]) == 4):
+            Initialize_My_FileSystem(int(sys.argv[1]))
+        else:
+            print("The current design only support 4 servers.")
+            quit()
+    except:
+        print("Incorrect argument to intilialize the file server")
+        quit()
+
     my_object = FileSystemOperations()
     #YOU MAY WRITE YOUR CODE AFTER HERE
 
