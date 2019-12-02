@@ -92,9 +92,6 @@ class InodeLayer():
 
     	else:
 
-         self.free_data_block(inode,start_block)
-         inode.size = 0
-
     	 for i in range(0, len(data), config.BLOCK_SIZE):
 
             zeropadding = config.BLOCK_SIZE - len(data[i : i + config.BLOCK_SIZE])
@@ -119,7 +116,13 @@ class InodeLayer():
         for i in range(0, num_block_required):
           interface.update_data_block(inode.blk_numbers[start_block + i], dataarray[i], delay)   #write blocks
 
-    	return inode
+        if (inode.size > num_block_required):
+            dif = inode.size - num_block_required
+
+            self.free_data_block(inode, inode.blk_numbers[start_block + num_block_required] )
+            inode.size -= dif
+
+        return inode
 
     #IMPLEMENTS THE READ FUNCTION
     def read(self, inode, offset, length):
