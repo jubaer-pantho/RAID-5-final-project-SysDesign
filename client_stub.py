@@ -94,6 +94,29 @@ class client_stub():
     			else:
     				print('more then one server down or corrupted')
     				quit()
+        elif(server == self.faulty_server):
+            print('Parityserver '+ str(self.faulty_server) + ' is down or corrupted, data is reconstructed by reading from other servers')
+            datareconstructed = (config.BLOCK_SIZE+16)*'\0'
+            old_parity =  (config.BLOCK_SIZE+16)*'\0'
+
+            blocklist = range(3)
+            for i in blocklist:
+                blocklist[i] += (block_number/3)*3
+
+            for blocknum in blocklist:
+                if(self.physical_block_numbers[blocknum] != -1): #check if exits
+                    dataotherservers.append(self.get_data_block(blocknum,0))
+            dataotherservers = []
+            if(len(dataotherservers) == 3):
+                datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(dataotherservers[0],dataotherservers[1]))
+                datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(datareconstructed,dataotherservers[2]))
+            elif(len(dataotherservers) == 2):
+                datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(dataotherservers[0],dataotherservers[1]))
+            elif(len(dataotherservers) == 1):
+                datareconstructed = dataotherservers[0]
+
+            return datareconstructed
+
 
     	else: # if server from whom we want to read is down or data is currupted
             print('Server '+ str(self.faulty_server) + ' is down or corrupted, data is reconstructed by reading from other servers')
@@ -216,8 +239,11 @@ class client_stub():
                 print('Waiting to write parity on server ' + str(parityserver))
                 time.sleep(delay)
 
-                self.servers[parityserver].update_data_block(phy_paritynumer, parity_data )
-
+                ret = self.servers[parityserver].update_data_block(phy_paritynumer, parity_data )
+                ret = pickle.loads(ret)
+                if(ret[1] == False):
+                    print('No parity is written since parityserver ' + str(parityserver) + ' is down')
+                    self.faulty_server = parityserver
             except Exception as err:
                 print('Error update_data_block')
                 print(err)
