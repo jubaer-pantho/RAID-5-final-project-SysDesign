@@ -72,8 +72,7 @@ def inode_number_to_inode(inode_number):
 
 def status():
 	retVal = filesystem.status()
-	retVal = pickle.dumps((retVal,state))
-	print(state)
+	retVal = pickle.dumps((retVal,state))	
 	return retVal
 
 def corruptData():

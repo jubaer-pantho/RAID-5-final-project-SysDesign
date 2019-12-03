@@ -104,7 +104,7 @@ class InodeLayer():
     	num_block_required = len(dataarray)
         serverprint = 'Data is written on '
     	for i in range(0, num_block_required):
-    	  if(inode.size < len(dataarray)):
+    	  if(inode.size < (i  + start_block +1)):
     	    inode.blk_numbers[start_block + i] = interface.get_new_virtual_block()  #allocate new blocks in inode if needed
     	    inode.size += 1    #update file size
     	    inode.time_modified = str(datetime.datetime.now())   #update modified time when new reference block is created in the inode
@@ -112,11 +112,12 @@ class InodeLayer():
 
           serverprint = serverprint + 'server ' + str(ser[0])+ ' '
         print(serverprint)
+
         time.sleep(delay)
         for i in range(0, num_block_required):
           interface.update_data_block(inode.blk_numbers[start_block + i], dataarray[i], delay)   #write blocks
 
-        if (inode.size > num_block_required):
+        if (inode.size > (num_block_required + start_block)):
             dif = inode.size - num_block_required
 
             self.free_data_block(inode, inode.blk_numbers[start_block + num_block_required] )
@@ -168,15 +169,17 @@ class InodeLayer():
         print(serverprint)
         time.sleep(5)
 
+
+        file_size = 0
         for i in range(0,numb_blocks):
     	  dataarray.append(self.INODE_TO_BLOCK(inode,offset + (i*config.BLOCK_SIZE))) #read all blocks where the desired data is distribuited
-          file_size = len(dataarray[i]) -  dataarray[i].count('\0')
-
-          if(offsetcopy%config.BLOCK_SIZE >= file_size):
-      	       print('Reading ERROR: Offset too big')
-      	       return inode, -1
+          file_size += len(dataarray[i]) -  dataarray[i].count('\0')
 
           read_data += dataarray[i][(offsetcopy%config.BLOCK_SIZE):(offsetcopy%config.BLOCK_SIZE)+leng_blocks[i]]    #read out the right data starting from offset
     	  offsetcopy = 0
+
+        if(offsetcopy%config.BLOCK_SIZE >= file_size):
+              print('Reading ERROR: Offset too big')
+              return inode, -1
 
         return inode, read_data
