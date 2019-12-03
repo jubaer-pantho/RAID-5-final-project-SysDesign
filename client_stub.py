@@ -100,10 +100,12 @@ class client_stub():
             datareconstructed = (config.BLOCK_SIZE+16)*'\0'
             old_parity =  (config.BLOCK_SIZE+16)*'\0'
             blocklist = range(3)
-            for i in blocklist:
-                blocklist[i] + (block_number/3)*3
 
-            blocklist = [x for i, x in enumerate(blocklist) if i != block_number]
+            for i in blocklist:
+                blocklist[i] += (block_number/3)*3
+
+            blocklist = [x for i, x in enumerate(blocklist) if x != block_number]
+
             dataotherservers = []
 
             for blocknum in blocklist:
@@ -252,9 +254,10 @@ class client_stub():
 
             blocklist = range(3)
             for i in blocklist:
-                blocklist[i] + (block_number/3)*3
+                blocklist[i] += (block_number/3)*3
 
             blocklist = [x for i, x in enumerate(blocklist) if i != block_number]
+
             dataotherservers = []
 
             for blocknum in blocklist:
