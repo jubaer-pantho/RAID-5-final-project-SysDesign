@@ -256,7 +256,7 @@ class client_stub():
             for i in blocklist:
                 blocklist[i] += (block_number/3)*3
 
-            blocklist = [x for i, x in enumerate(blocklist) if i != block_number]
+            blocklist = [x for i, x in enumerate(blocklist) if x != block_number]
 
             dataotherservers = []
 
