@@ -53,7 +53,6 @@ class client_stub():
     def get_data_block(self, block_number, parity_server = 0):
 
     	server, parityserver = self.block_number_translate(block_number)
-
     	if(parity_server == 0):
     		phy_blocknumer = self.physical_block_numbers[block_number]
 
@@ -94,7 +93,7 @@ class client_stub():
     			else:
     				print('more then one server down or corrupted')
     				quit()
-        elif(server == self.faulty_server):
+        elif(server == self.faulty_server and parity_server == 1):
             print('Parityserver '+ str(self.faulty_server) + ' is down or corrupted, data is reconstructed by reading from other servers')
             datareconstructed = (config.BLOCK_SIZE+16)*'\0'
             old_parity =  (config.BLOCK_SIZE+16)*'\0'
@@ -102,11 +101,11 @@ class client_stub():
             blocklist = range(3)
             for i in blocklist:
                 blocklist[i] += (block_number/3)*3
-
+            dataotherservers = []
             for blocknum in blocklist:
                 if(self.physical_block_numbers[blocknum] != -1): #check if exits
                     dataotherservers.append(self.get_data_block(blocknum,0))
-            dataotherservers = []
+
             if(len(dataotherservers) == 3):
                 datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(dataotherservers[0],dataotherservers[1]))
                 datareconstructed = ''.join(chr(ord(a)^ord(b)) for a, b in zip(datareconstructed,dataotherservers[2]))
