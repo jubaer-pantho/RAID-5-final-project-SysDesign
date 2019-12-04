@@ -58,8 +58,8 @@ if __name__ == '__main__':
         if (int(sys.argv[1]) == 4):
             Initialize_My_FileSystem(int(sys.argv[1]))
         else:
-            print("The current design only support 4 servers.")
-            quit()
+            print("The current design only support 4 servers")
+            Initialize_My_FileSystem(4)
     except:
         print("Incorrect argument to intilialize the file server")
         quit()
@@ -109,8 +109,7 @@ if __name__ == '__main__':
                 my_object.mv(inputs[1], inputs[2])
             except:
                 print("Error: Revise your input, to move a file : <mv oldPath newPath>")
+        elif(inputs[0] == 'exit'):
+            break;
         else:
            print('Incorrect input')
-
-
-
