@@ -58,10 +58,10 @@ if __name__ == '__main__':
         if (int(sys.argv[1]) == 4):
             Initialize_My_FileSystem(int(sys.argv[1]))
         else:
-            print("The current design only supports 4 servers")
+            print("The current design only supports 4 servers. Initializing for 4 servers")
             Initialize_My_FileSystem(4)
     except:
-        print("Incorrect argument to intilialize the file server")
+        print("Error: Might be incorrect argument to intilialize the file server.\n Correct Argument <python FileSystem.py 4>")
         quit()
 
     my_object = FileSystemOperations()
