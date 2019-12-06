@@ -5,7 +5,7 @@ import MemoryInterface, AbsolutePathNameLayer, os, sys
 
 
 
-element_size = 1024 #data size = element_size * 8 Bytes
+element_size = 512 #data size = element_size * 8 Bytes
 large_data = ["Florida "] * element_size
 large_string = ''.join(large_data)
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     my_object.mkdir("/A")
     my_object.create("/A/1.txt") #, as A is already there we can crete file in A
     start = timeit.default_timer()
-    my_object.write("/A/1.txt", 0, 0, large_string)
+    my_object.write("/A/1.txt", 0, 1, large_string)
     stop = timeit.default_timer()
     print('Write Time: ', stop - start)
 
